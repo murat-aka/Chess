@@ -1,19 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package chess;
-
-/**
- *
- * @author murat
- */
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 public class UserInterface extends JPanel implements MouseListener, MouseMotionListener{
-    static int x=0,y=0;
+    static int mouseX, mouseY, newMouseX, newMouseY;
     static int squareSize=32;
     @Override
     public void paintComponent(Graphics g) {
@@ -69,19 +58,45 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
         */
     }
     @Override
-    public void mouseMoved(MouseEvent e) {x=e.getX();
-        y=e.getY();
-        repaint();}
+    public void mouseMoved(MouseEvent e) {}
     @Override
-    public void mousePressed(MouseEvent e) {}
-    @Override
-    public void mouseReleased(MouseEvent e) {}
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        x=e.getX();
-        y=e.getY();
-        repaint();
+    public void mousePressed(MouseEvent e) {
+        if (e.getX()<8*squareSize &&e.getY()<8*squareSize) {
+            //if inside the board
+            mouseX=e.getX();
+            mouseY=e.getY();
+            repaint();
+        }
     }
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.getX()<8*squareSize &&e.getY()<8*squareSize) {
+            //if inside the board
+            newMouseX=e.getX();
+            newMouseY=e.getY();
+            if (e.getButton()==MouseEvent.BUTTON1) {
+                String dragMove;
+                if (newMouseY/squareSize==0 && mouseY/squareSize==1 && "P".equals(AlphaBetaChess.chessBoard[mouseY/squareSize][mouseX/squareSize])) {
+                    //pawn promotion
+                    dragMove=""+mouseX/squareSize+newMouseX/squareSize+AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize]+"QP";
+                } else {
+                    //regular move
+                    dragMove=""+mouseY/squareSize+mouseX/squareSize+newMouseY/squareSize+newMouseX/squareSize+AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize];
+                }
+                String userPosibilities=AlphaBetaChess.posibleMoves();
+                if (userPosibilities.replaceAll(dragMove, "").length()<userPosibilities.length()) {
+                    //if valid move
+                    AlphaBetaChess.makeMove(dragMove);
+                    AlphaBetaChess.flipBoard();
+                    AlphaBetaChess.makeMove(AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, 1000000, -1000000, "", 0));
+                    AlphaBetaChess.flipBoard();
+                    repaint();
+                }
+            }
+        }
+    }
+    @Override
+    public void mouseClicked(MouseEvent e) {}
     @Override
     public void mouseDragged(MouseEvent e) {}
     @Override
