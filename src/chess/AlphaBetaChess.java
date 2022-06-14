@@ -35,7 +35,7 @@ public class AlphaBetaChess {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UserInterface ui=new UserInterface();
         f.add(ui);
-        f.setSize(500, 500);
+        f.pack();
         f.setVisible(true);
         System.out.println(sortMoves(posibleMoves()));
         Object[] option={"Computer","Human"};

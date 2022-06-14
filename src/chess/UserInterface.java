@@ -1,23 +1,39 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import javax.swing.*;
-public class UserInterface extends JPanel implements MouseListener, MouseMotionListener{
+
+public class UserInterface extends JPanel implements MouseListener, MouseMotionListener {
     static int mouseX, mouseY, newMouseX, newMouseY;
-    static int squareSize=32;
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    static int squareSize=64;
+    
+    private static final Image chessPiecesImage;
+    
+    static {
+    	try {
+			chessPiecesImage = new ImageIcon(UserInterface.class.getResourceAsStream("/ChessPieces.png").readAllBytes()).getImage();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+    }
+    
+    public UserInterface() {
         this.setBackground(Color.yellow);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+    }
+    
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         for (int i=0;i<64;i+=2) {
             g.setColor(new Color(255,200,100));
             g.fillRect((i%8+(i/8)%2)*squareSize, (i/8)*squareSize, squareSize, squareSize);
             g.setColor(new Color(150,50,30));
             g.fillRect(((i+1)%8-((i+1)/8)%2)*squareSize, ((i+1)/8)*squareSize, squareSize, squareSize);
         }
-        Image chessPiecesImage;
-        chessPiecesImage=new ImageIcon("ChessPieces.png").getImage();
         for (int i=0;i<64;i++) {
             int j=-1,k=-1;
             switch (AlphaBetaChess.chessBoard[i/8][i%8]) {
@@ -88,6 +104,8 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
                     //if valid move
                     AlphaBetaChess.makeMove(dragMove);
                     AlphaBetaChess.flipBoard();
+                    // Warning, this is a long running task, it should be executed in a background task
+                    // The problem is the board is not refreshed until the computer makes its move
                     AlphaBetaChess.makeMove(AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, 1000000, -1000000, "", 0));
                     AlphaBetaChess.flipBoard();
                     repaint();
@@ -103,4 +121,9 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
     public void mouseEntered(MouseEvent e) {}
     @Override
     public void mouseExited(MouseEvent e) {}
+    
+	@Override
+	public Dimension getPreferredSize() {
+		return new Dimension(8*squareSize,8*squareSize);
+	}
 }
